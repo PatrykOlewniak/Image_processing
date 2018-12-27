@@ -13,35 +13,43 @@ def load_image(path, show=False, normalize=True):
         plt.show()
     return image
 
-def smooth(image, kernel_size=3):
-    # smooth kernel  - small smooth
-    kernel = np.ones((kernel_size, kernel_size))
-    kernel /= 1.0 * kernel_size * kernel_size
 
-
-
-def convolve_2d(image, kernel_size=3):
-    # smooth kernel  - small smooth
-    kernel = np.ones((kernel_size, kernel_size))
-    kernel /= 1.0 * kernel_size * kernel_size
-
-    # convolve 2d the kernel with each channel
-    r = scipy.signal.convolve2d(image[:, :, 0], kernel, mode='same')
-    g = scipy.signal.convolve2d(image[:, :, 1], kernel, mode='same')
-    b = scipy.signal.convolve2d(image[:, :, 2], kernel, mode='same')
-#
-    # stack the channels back into a 8-bit colour depth image and plot it
-    image_changed = np.dstack([r, g, b])
-    image_changed = (image_changed * 255).astype(np.uint8) # return to 256 (if normalized) TODO: check if normalized
-
+def show_converted_img_with_source(source_image, changed_image):
     plt.subplot(1, 2, 1)
-    plt.imshow(image, interpolation='none', cmap=plt.cm.gray)
+    plt.imshow(source_image, interpolation='none', cmap=plt.cm.gray)
     plt.subplot(1, 2, 2)
-    plt.imshow(image_changed, interpolation='none', cmap=plt.cm.gray)
+    plt.imshow(changed_image, interpolation='none', cmap=plt.cm.gray)
     plt.show()
+
+
+def convolve_2d(image, kernel, normalize=True, RGB=True):
+
+    if RGB:
+        # convolve 2d the kernel with each channel
+        r = scipy.signal.convolve2d(image[:, :, 0], kernel, mode='same')
+        g = scipy.signal.convolve2d(image[:, :, 1], kernel, mode='same')
+        b = scipy.signal.convolve2d(image[:, :, 2], kernel, mode='same')
+    #
+        # stack the channels back into a 8-bit colour depth image and plot it
+        changed_image = np.dstack([r, g, b])
+        if normalize:
+            changed_image = (changed_image * 255).astype(np.uint8) # return to 256 (if normalized) TODO: check if normalized
+    else:
+        pass # TODO: implement grey_scale imgs
+        
+    return changed_image
+
+
+def smooth(image, kernel_size=3):
+    print(kernel_size)
+    kernel = np.ones((kernel_size, kernel_size))
+    kernel /= 1.0 * kernel_size * kernel_size
+    return convolve_2d(image, kernel, RGB=True)
+
 
 
 if __name__ == '__main__':
     eiffelImg = "files/images/eiffel-tower.jpg"
     img = load_image(eiffelImg)
-    convolve_2d(img)
+    changed_image = smooth(img,3)
+    show_converted_img_with_source(img, changed_image)
